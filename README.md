@@ -1,6 +1,8 @@
-# Preseed-Datei für den Debianinstaller
+# Unattended Debian installation via Preseed-Datei für den Debianinstaller
 
-Preseed zum anbinden an eine Debian-Netinstaller-Iso
+Mit diesem Verfahren wird ein Debian ISO erstellt, welches nahezu unattended installiert. Auf Wunsch kann auch das Root-PW und ein Hostname hinterlegt werden, um die Installation komplett zu automatisieren. 
+
+Eine Preseed-Datei zum einbinden an eine Debian-Netinstaller-Iso liegt mit bei.
 
 ## Was wird automatisiert?
 
