@@ -13,7 +13,7 @@ Preseed zum anbinden an eine Debian-Netinstaller-Iso
 5. Partitionierung ist so gesetzt, dass die erste gefunde Festplatte genommen wird und eine alle Daten in 1 Partition gesetzt werden
 6. Es wird das Standardpaket ohne Grafikoberfläche und das ssh-plugin installiert.
 7. Bootloader wird auf der ersten gefundenen Festplatte installiert.
-8. Umfragedaten werden nicht an gesendet
+8. Umfragedaten werden nicht gesendet
 
 **Es müssen noch selber ein Root-Passwort gesetzt und ein Domain-und Servername angegeben werden**
 
