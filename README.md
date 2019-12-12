@@ -38,7 +38,7 @@ chmod -w -R isofiles/install.amd/
 ```
 6. Die *md5sum.txt* aktualisieren
 ```
-cd ZielordnerALPHA
+cd isofiles
 md5sum `find -follow -type f` > md5sum.txt
 cd ..
 ```
