@@ -27,7 +27,7 @@ und es besteht keine Garantie, dass sie bei Änderungen funktioniert.
 1. Von [debian.org](https://www.debian.org/CD/http-ftp/index.de.html#stable) die gewünschte Iso-Datei herunterladen.
 2. *preseed.cfg* im selben Verzeichnis speichern.
 3. Einen leeren Ordner im Verzeichnis erstellen. Dieser heißt zu Referenzzwecken *isofiles*.
-4. Mit `bsdtar -C *isofiles* -xf NAMEDERISODATEI.iso` den Inhalt der Isodatei in den Ordner übertragen.
+4. Mit `bsdtar -C isofiles -xf NAMEDERISODATEI.iso` den Inhalt der Isodatei in den Ordner übertragen.
 5. Die preseed Datei an die *initrd* anhängen. (Schreibrechte geben > entpacken > anhängen > packen > Schreibrechte nehmen)
 ```
 chmod +w -R isofiles/install.amd/
