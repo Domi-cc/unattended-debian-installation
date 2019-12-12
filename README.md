@@ -1,8 +1,8 @@
-#Preseed-Datei für den Debianinstaller
+# Preseed-Datei für den Debianinstaller
 
 Preseed zum anbinden an eine Debian-Netinstaller-Iso
 
-##Was wird automatisiert?
+## Was wird automatisiert?
 
 **Bestätigungsanfragen werden automatisch beantwortet**
 
@@ -19,7 +19,7 @@ Preseed zum anbinden an eine Debian-Netinstaller-Iso
 
 **Fehlermeldung mount unmount am Anfang der installation ignorieren!?**
 
-##Erstellung einer Iso-Datei mit Preseed mit einem Linux-Terminal
+## Erstellung einer Iso-Datei mit Preseed mit einem Linux-Terminal
 
 **Hinweis:** Diese Datei wurde auf einem *amd64* System auf Basis einer *netinstall cd Stand 10.2.0* geschrieben
 und es besteht keine Garantie, dass sie bei Änderungen funktioniert.
@@ -27,7 +27,7 @@ und es besteht keine Garantie, dass sie bei Änderungen funktioniert.
 1. Von [debian.org](https://www.debian.org/CD/http-ftp/index.de.html#stable) die gewünschte Iso-Datei herunterladen.
 2. *preseed.cfg* im selben Verzeichnis speichern.
 3. Einen leeren Ordner im Verzeichnis erstellen. Dieser heißt zu Referenzzwecken *isofiles*.
-4. Mit `bsdtar -C *isofiles* -xf *NameDerIsoDatei.iso*` den Inhalt der Isodatei in den Ordner übertragen.
+4. Mit `bsdtar -C *isofiles* -xf NAMEDERISODATEI.iso` den Inhalt der Isodatei in den Ordner übertragen.
 5. Die preseed Datei an die *initrd* anhängen. (Schreibrechte geben > entpacken > anhängen > packen > Schreibrechte nehmen)
 ```
 chmod +w -R isofiles/install.amd/
@@ -46,7 +46,7 @@ cd ..
 ```
 genisoimage -r -J -b isolinux/isolinux.bin -c isolinux/boot.cat \
             -no-emul-boot -boot-load-size 4 -boot-info-table \
-            -o **GewünschterName**.iso *isofiles*
+            -o WUNSCHNAME.iso isofiles
 ```
 8. Fertig
 
