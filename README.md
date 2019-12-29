@@ -41,9 +41,13 @@ chmod -w -R isofiles/install.amd/
 6. Die *md5sum.txt* aktualisieren
 ```
 cd isofiles
+chmod +w md5sum.txt
 md5sum `find -follow -type f` > md5sum.txt
+chmod -w md5sum.txt
 cd ..
 ```
+(Ignore warning: File system loop detected)
+
 7. Den Ordner *isofiles* wieder in eine bootbare Iso-Datei umwandeln.
 ```
 genisoimage -r -J -b isolinux/isolinux.bin -c isolinux/boot.cat \
