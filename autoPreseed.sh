@@ -6,7 +6,7 @@
 # //TODO: check if debian.iso exists or run downloadiso.sh
 #wget https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-10.2.0-amd64-netinst.iso
 
-wget https://raw.githubusercontent.com/Domi-cc/unattended-debian-installation/master/preseed.cfg
+#wget https://raw.githubusercontent.com/Domi-cc/unattended-debian-installation/master/preseed.cfg
 mkdir tempOrdnerPreseed
 bsdtar -C tempOrdnerPreseed -xf debian.iso
 # preseed anhängen
@@ -28,4 +28,4 @@ sudo genisoimage -r -J -b isolinux/isolinux.bin -c isolinux/boot.cat \
 # Aufräumen
 chmod +w -R tempOrdnerPreseed/
 rm -r tempOrdnerPreseed
-rm preseed.cfg
+#rm preseed.cfg
