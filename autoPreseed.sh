@@ -4,7 +4,6 @@
 
 FILEOUT=debian-unattended.iso
 FILEIN=debian.cfg
-CONFIG=preseed.cfg
 
 if [ -f "$FILEOUT" ]; then
     echo "$FILEOUT already exists."
@@ -20,7 +19,7 @@ bsdtar -C tempOrdnerPreseed -xf debian.iso
 # preseed anhängen
 chmod +w -R tempOrdnerPreseed/install.amd/
 gunzip tempOrdnerPreseed/install.amd/initrd.gz
-echo $CONFIG | cpio -H newc -o -A -F tempOrdnerPreseed/install.amd/initrd
+echo preseed.cfg | cpio -H newc -o -A -F tempOrdnerPreseed/install.amd/initrd
 gzip tempOrdnerPreseed/install.amd/initrd
 chmod -w -R tempOrdnerPreseed/install.amd/
 # md5sum fix
