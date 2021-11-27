@@ -1,5 +1,16 @@
 #!/bin/bash
 
+#TODO: change script to use die constants instead hardcoded values
+
+FILEOUT=debian-unattended.iso
+FILEIN=debian.cfg
+CONFIG=preseed.cfg
+
+if [ -f "$FILEOUT" ]; then
+    echo "$FILEOUT already exists."
+    exit 1;
+fi
+
 # Skript zur automatischen Erstellung der preseeded Iso mit debian
 
 ./downloadiso.sh
@@ -9,7 +20,7 @@ bsdtar -C tempOrdnerPreseed -xf debian.iso
 # preseed anhängen
 chmod +w -R tempOrdnerPreseed/install.amd/
 gunzip tempOrdnerPreseed/install.amd/initrd.gz
-echo preseed.cfg | cpio -H newc -o -A -F tempOrdnerPreseed/install.amd/initrd
+echo $CONFIG | cpio -H newc -o -A -F tempOrdnerPreseed/install.amd/initrd
 gzip tempOrdnerPreseed/install.amd/initrd
 chmod -w -R tempOrdnerPreseed/install.amd/
 # md5sum fix
@@ -25,4 +36,3 @@ sudo genisoimage -r -J -b isolinux/isolinux.bin -c isolinux/boot.cat \
 # Aufräumen
 chmod +w -R tempOrdnerPreseed/
 rm -r tempOrdnerPreseed
-#rm preseed.cfg
