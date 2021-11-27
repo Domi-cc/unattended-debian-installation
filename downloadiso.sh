@@ -1,12 +1,17 @@
 #!/bin/bash
 
-isoname=$(curl -s https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/ | egrep -io "(debian-[0-9]{2}\.[0-9]\.[0-9]-amd64-netinst\.iso)" | head -n 1)
+FILE=debian.iso
 
+if [ -f "$FILE" ]; then
+    echo "$FILE already exists."
+else 
+    echo "$FILE does not exist. Downloading ... "
 
-url="https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/$isoname"
+    isoname=$(curl -s https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/ | egrep -io "(debian-[0-9]{2}\.[0-9]\.[0-9]-amd64-netinst\.iso)" | head -n 1)
 
-# -L for follow redirects
-curl -L $url --output debian.iso
+    url="https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/$isoname"
 
+    # -L for follow redirects
+    curl -L $url --output debian.iso
 
-
+fi
