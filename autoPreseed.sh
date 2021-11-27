@@ -1,12 +1,9 @@
 #!/bin/bash
 
-# Skript zur automatischen Erstellung der preseeded Iso mit debian 10.2.0
-# Downloads und Verzeichnis anlegen
+# Skript zur automatischen Erstellung der preseeded Iso mit debian
 
-# //TODO: check if debian.iso exists or run downloadiso.sh
-#wget https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-10.2.0-amd64-netinst.iso
+./downloadiso.sh
 
-#wget https://raw.githubusercontent.com/Domi-cc/unattended-debian-installation/master/preseed.cfg
 mkdir tempOrdnerPreseed
 bsdtar -C tempOrdnerPreseed -xf debian.iso
 # preseed anhängen
