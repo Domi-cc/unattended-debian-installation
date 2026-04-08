@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-REQUIRED_CMDS=(bsdtar cpio gzip curl xorriso)
+REQUIRED_CMDS=(bsdtar cpio gzip curl xorriso genisoimage)
 MISSING=()
 for cmd in "${REQUIRED_CMDS[@]}"; do
     if ! command -v "$cmd" &>/dev/null; then
@@ -10,7 +10,7 @@ for cmd in "${REQUIRED_CMDS[@]}"; do
 done
 if [ ${#MISSING[@]} -gt 0 ]; then
     echo "Fehlende Tools: ${MISSING[*]}"
-    echo "Installieren mit: apt install libarchive-tools cpio xorriso isolinux curl"
+    echo "Installieren mit: apt install libarchive-tools cpio xorriso isolinux genisoimage curl"
     exit 1
 fi
 if [ ! -f /usr/lib/ISOLINUX/isohdpfx.bin ]; then
@@ -33,6 +33,8 @@ else
     VERSION="$1"
 fi
 TMPDIR="tmpPreseed_$$"
+cleanup() { [ -d "$TMPDIR" ] && chmod +w -R "$TMPDIR/" && rm -rf "$TMPDIR"; }
+trap cleanup EXIT
 
 # ISO herunterladen, Dateiname kommt via stdout
 FILEIN=$(./downloadiso.sh "$VERSION")
@@ -51,6 +53,37 @@ fi
 # ISO entpacken
 mkdir "$TMPDIR"
 bsdtar -C "$TMPDIR" -xf "$FILEIN"
+
+# Boot-Config: sofort in Text-Installer mit auto-Modus booten
+# Kein Menue, kein Countdown, keine Speech synthesis, kein grafischer Installer
+# BIOS (isolinux)
+chmod +w -R "$TMPDIR/isolinux/" 2>/dev/null || true
+BOOT_PARAMS="priority=critical locale=en_US.UTF-8 keymap=de vga=788"
+cat > "$TMPDIR/isolinux/isolinux.cfg" <<ISOLINUX
+default install
+timeout 1
+label install
+	kernel /install.amd/vmlinuz
+	append ${BOOT_PARAMS} initrd=/install.amd/initrd.gz --- quiet
+ISOLINUX
+# Alle anderen Boot-Eintraege neutralisieren (Speech synthesis, GTK, etc.)
+for cfg in spkgtk.cfg spk.cfg gtk.cfg txt.cfg menu.cfg; do
+    : > "$TMPDIR/isolinux/$cfg"
+done
+# UEFI (grub)
+if [ -d "$TMPDIR/boot/grub" ]; then
+    chmod +w -R "$TMPDIR/boot/grub/"
+    cat > "$TMPDIR/boot/grub/grub.cfg" <<GRUB
+set timeout=0
+set default=0
+set gfxpayload=keep
+insmod all_video
+menuentry 'Install' {
+    linux /install.amd/vmlinuz ${BOOT_PARAMS} --- quiet
+    initrd /install.amd/initrd.gz
+}
+GRUB
+fi
 
 # Preseed in initrd einbetten
 chmod +w -R "$TMPDIR/install.amd/"
@@ -89,9 +122,5 @@ else
         -no-emul-boot -boot-load-size 4 -boot-info-table \
         -o "$FILEOUT" "$TMPDIR"
 fi
-
-# Aufraeumen
-chmod +w -R "$TMPDIR/"
-rm -rf "$TMPDIR"
 
 echo "Erstellt: $FILEOUT"

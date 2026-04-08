@@ -16,7 +16,7 @@ Erstellt bootbare Debian-ISOs die vollautomatisch installieren — ohne Benutzer
 ## Voraussetzungen
 
 ```bash
-apt install libarchive-tools cpio xorriso isolinux curl
+apt install libarchive-tools cpio xorriso isolinux genisoimage curl
 ```
 
 Fallback auf `genisoimage` (nur BIOS) wenn kein UEFI-Image im ISO vorhanden.
