@@ -1,37 +1,97 @@
 #!/bin/bash
+set -euo pipefail
 
-#TODO: change script to use die constants instead hardcoded values
-
-FILEOUT=debian-unattended.iso
-FILEIN=debian.cfg
-
-if [ -f "$FILEOUT" ]; then
-    echo "$FILEOUT already exists."
-    exit 1;
+REQUIRED_CMDS=(bsdtar cpio gzip curl xorriso)
+MISSING=()
+for cmd in "${REQUIRED_CMDS[@]}"; do
+    if ! command -v "$cmd" &>/dev/null; then
+        MISSING+=("$cmd")
+    fi
+done
+if [ ${#MISSING[@]} -gt 0 ]; then
+    echo "Fehlende Tools: ${MISSING[*]}"
+    echo "Installieren mit: apt install libarchive-tools cpio xorriso isolinux curl"
+    exit 1
+fi
+if [ ! -f /usr/lib/ISOLINUX/isohdpfx.bin ]; then
+    echo "Fehlt: /usr/lib/ISOLINUX/isohdpfx.bin"
+    echo "Installieren mit: apt install isolinux"
+    exit 1
 fi
 
-# Skript zur automatischen Erstellung der preseeded Iso mit debian
+if [ -z "${1:-}" ]; then
+    echo "Welche Debian-Version?"
+    echo "  1) Debian 13 (stable)"
+    echo "  2) Debian testing"
+    read -rp "Auswahl [1]: " choice
+    case "${choice:-1}" in
+        1) VERSION="13" ;;
+        2) VERSION="testing" ;;
+        *) echo "Ungueltige Auswahl."; exit 1 ;;
+    esac
+else
+    VERSION="$1"
+fi
+TMPDIR="tmpPreseed_$$"
 
-./downloadiso.sh
+# ISO herunterladen, Dateiname kommt via stdout
+FILEIN=$(./downloadiso.sh "$VERSION")
+FILEOUT="${FILEIN%-netinst.iso}-unattended.iso"
 
-mkdir tempOrdnerPreseed
-bsdtar -C tempOrdnerPreseed -xf debian.iso
-# preseed anhängen
-chmod +w -R tempOrdnerPreseed/install.amd/
-gunzip tempOrdnerPreseed/install.amd/initrd.gz
-echo preseed.cfg | cpio -H newc -o -A -F tempOrdnerPreseed/install.amd/initrd
-gzip tempOrdnerPreseed/install.amd/initrd
-chmod -w -R tempOrdnerPreseed/install.amd/
-# md5sum fix
-cd tempOrdnerPreseed
+if [ ! -f "$FILEIN" ]; then
+    echo "Fehler: $FILEIN nicht gefunden."
+    exit 1
+fi
+
+if [ -f "$FILEOUT" ]; then
+    echo "$FILEOUT existiert bereits."
+    exit 1
+fi
+
+# ISO entpacken
+mkdir "$TMPDIR"
+bsdtar -C "$TMPDIR" -xf "$FILEIN"
+
+# Preseed in initrd einbetten
+chmod +w -R "$TMPDIR/install.amd/"
+gunzip "$TMPDIR/install.amd/initrd.gz"
+echo preseed.cfg | cpio -H newc -o -A -F "$TMPDIR/install.amd/initrd"
+gzip "$TMPDIR/install.amd/initrd"
+chmod -w -R "$TMPDIR/install.amd/"
+
+# md5sum aktualisieren
+cd "$TMPDIR"
 chmod +w md5sum.txt
-md5sum `find -follow -type f` > md5sum.txt
+# -follow erzeugt "File system loop detected" bei Debian-ISOs (Symlink-Loop) — ist harmlos
+{ find . -follow -type f ! -name md5sum.txt -print0 2>/dev/null || true; } | xargs -0 md5sum > md5sum.txt.new
+mv md5sum.txt.new md5sum.txt
 chmod -w md5sum.txt
 cd ..
-# Neue Iso erstellen; hat bei mir nicht ohne root Rechte funktioniert
-sudo genisoimage -r -J -b isolinux/isolinux.bin -c isolinux/boot.cat \
-            -no-emul-boot -boot-load-size 4 -boot-info-table \
-            -o debian-unattended.iso tempOrdnerPreseed
-# Aufräumen
-chmod +w -R tempOrdnerPreseed/
-rm -r tempOrdnerPreseed
+
+# ISO erstellen
+if [ -f "$TMPDIR/boot/grub/efi.img" ]; then
+    # UEFI + BIOS hybrid
+    xorriso -as mkisofs \
+        -o "$FILEOUT" \
+        -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
+        -c isolinux/boot.cat \
+        -b isolinux/isolinux.bin \
+        -no-emul-boot -boot-load-size 4 -boot-info-table \
+        -eltorito-alt-boot \
+        -e boot/grub/efi.img \
+        -no-emul-boot -isohybrid-gpt-basdat \
+        "$TMPDIR"
+else
+    # Nur BIOS (Fallback)
+    genisoimage -r -J \
+        -b isolinux/isolinux.bin \
+        -c isolinux/boot.cat \
+        -no-emul-boot -boot-load-size 4 -boot-info-table \
+        -o "$FILEOUT" "$TMPDIR"
+fi
+
+# Aufraeumen
+chmod +w -R "$TMPDIR/"
+rm -rf "$TMPDIR"
+
+echo "Erstellt: $FILEOUT"

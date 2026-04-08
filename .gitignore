@@ -1,2 +1,4 @@
 *.iso
-
+tmpPreseed_*
+.claude/
+CLAUDE.md
